@@ -1,6 +1,26 @@
 
-import os
+import pathlib
 import argparse
+
+C_EXTENSIONS = ['.c', '.s', '.cpp']
+
+def find_source(root):
+    ''' Find all C source files from the provided root directory.
+
+    Args:
+        root (Path): path to the directory to search
+
+    Returns:
+        List of found source files.
+    '''
+    found = []
+
+    for path in pathlib.Path(root).glob('**/*'):
+        extension = path.suffix
+        if extension in C_EXTENSIONS:
+            found.append(path.resolve())
+
+    return found
 
 def main():
     parser = argparse.ArgumentParser("Find sourse files")
