@@ -1,19 +1,25 @@
 
-MOCK_SOURCE += ./src
-MOCK_INCLUDE += ./src
-MOCK_OUTPUT = ./output
+HERE := $(CURDIR)
+
+MOCK_SOURCE = $(HERE)/src
+MOCK_INCLUDE += $(HERE)/src
+MOCK_OUTPUT = $(HERE)/output
 
 OD := $(shell mkdir -p $(MOCK_OUTPUT))
-HERE := $(shell pwd)
 MOCK_OBJECTS := $(shell python \
           $(HERE)/scripts/find_mk.py \
           $(MOCK_SOURCE) \
           $(MOCK_OUTPUT) \
           source.mk)
 
-.PHONY: all clean
+.PHONY: mock_run mock_build mock_clean
 
-all: $(MOCK_OUTPUT)/a.out
+mock_run: mock_build
+	$(info Running Mock)
+	$(info ------------)
+	@$(MOCK_OUTPUT)/a.out
+
+mock_build: $(MOCK_OUTPUT)/a.out
 
 include $(MOCK_OUTPUT)/source.mk
 
@@ -21,5 +27,5 @@ $(MOCK_OUTPUT)/a.out: $(FIND_OBJS)
 	$(CC) $(FIND_OBJS) -o \
 		$(MOCK_OUTPUT)/a.out
 
-clean:
-	rm -rf output
+mock_clean:
+	rm -rf $(MOCK_OUTPUT)
