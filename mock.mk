@@ -1,9 +1,17 @@
 
 HERE := $(CURDIR)
 
-MOCK_SOURCE = $(HERE)/src
-MOCK_INCLUDE += $(HERE)/src
-MOCK_OUTPUT = $(HERE)/output
+ifndef MOCK_SOURCE
+$(error MOCK_SOURCE Must be defined)
+endif
+
+ifndef MOCK_INCLUDE
+$(error MOCK_INCLUDE Must be defined)
+endif
+
+ifndef MOCK_OUTPUT
+$(error MOCK_OUTPUT Must be defined)
+endif
 
 OD := $(shell mkdir -p $(MOCK_OUTPUT))
 MOCK_OBJECTS := $(shell python \
