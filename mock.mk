@@ -1,7 +1,9 @@
 
 HERE := $(CURDIR)
 
-MOCK_NAME := a.out
+ifndef MOCK_EXE
+MOCK_EXE := a.out
+endif
 
 ifndef MOCK_SOURCE
 $(error MOCK_SOURCE Must be defined, and should include a list of directories to search for source files)
@@ -25,13 +27,16 @@ MOCK_OBJECTS := $(shell python \
 .PHONY: mock_run mock_build mock_clean test
 
 mock_run: mock_build
-	$(info Running Mock '$(MOCK_NAME)')
+	$(info Running Mock '$(MOCK_EXE)')
 	$(info ------------)
-	@$(MOCK_OUTPUT)/$(MOCK_NAME)
+	@$(MOCK_OUTPUT)/$(MOCK_EXE)
 
-mock_build: $(MOCK_OUTPUT)/$(MOCK_NAME)
+mock_build: $(MOCK_OUTPUT)/$(MOCK_EXE)
 
 include $(MOCK_OUTPUT)/source.mk
+
+${MOCK_OUTPUT}/$(MOCK_EXE): $(FIND_OBJS)
+	$(CC) $(FIND_OBJS) -o $(MOCK_OUTPUT)/$(MOCK_EXE) $(FIND_INCLUDES)
 
 mock_clean:
 	rm -rf $(MOCK_OUTPUT)
