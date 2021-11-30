@@ -45,7 +45,7 @@ Variables to control Mock Make:
 | MOCK_SOURCE  | Dirs to walk for souce files  |
 | MOCK_OUTPUT  | Output directory path         |
 | MOCK_PATCH   | TBD: Files to be patched      |
-| MOCK_EXE     | TBD: Output EXE name          |
+| MOCK_EXE     | Output EXE name               |
 
 Provided Recipes:
 
