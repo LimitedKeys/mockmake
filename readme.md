@@ -21,8 +21,46 @@ out all the source files.
 > make
 ```
 
-## TODO
+## Using Mock Make
 
-- finding source files
-- basic implementation
-- notes on calling from another make
+Creat a Makefile and define a few variables:
+
+``` make
+MOCK_INCLUDE = ./src ../libs
+MOCK_SOURCE = ./src ../libs/driver ../libs/test
+MOCK_OUTPUT = ./output/mock
+MOCK_PATCH = main.c
+MOCK_EXE = test.mock.out
+
+.PHONY: all
+
+all: mock_build mock_run
+```
+
+Variables to control Mock Make:
+
+| Variable     | Description                   |
+| --------     | ----------		       |
+| MOCK_INCLUDE | Dirs to include (-I)          |
+| MOCK_SOURCE  | Dirs to walk for souce files  |
+| MOCK_OUTPUT  | Output directory path         |
+| MOCK_PATCH   | TBD: Files to be patched      |
+| MOCK_EXE     | TBD: Output EXE name          |
+
+Provided Recipes:
+
+| Recipe       | Description                   |
+| ------       | ----------		       |
+| mock_run     | Run the built executable      |
+| mock_build   | Build the executable          |
+| mock_clean   | Remove the mock output dir    |
+
+## Limitations
+
+-  folders / files cannot contain white space (bad things will happen)
+-  built source files must have unique names.
+   Two reasons:
+   1. All objects are put into the same output
+      directory. 
+   2. The patch file will find the source files
+      to patch based on the file name

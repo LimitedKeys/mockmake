@@ -2,20 +2,20 @@
 HERE := $(CURDIR)
 
 ifndef MOCK_SOURCE
-$(error MOCK_SOURCE Must be defined)
+$(error MOCK_SOURCE Must be defined, and should include a list of directories to search for source files)
 endif
 
 ifndef MOCK_INCLUDE
-$(error MOCK_INCLUDE Must be defined)
+$(error MOCK_INCLUDE Must be defined, and should include a list of directories to include for headers)
 endif
 
 ifndef MOCK_OUTPUT
-$(error MOCK_OUTPUT Must be defined)
+$(error MOCK_OUTPUT Must be defined, which will hold the built objects, source.mk file, and final exe)
 endif
 
 OD := $(shell mkdir -p $(MOCK_OUTPUT))
 MOCK_OBJECTS := $(shell python \
-          $(HERE)/scripts/find_mk.py \
+          $(HERE)/scripts/source_mk.py \
           $(MOCK_SOURCE) \
           $(MOCK_OUTPUT) \
           source.mk)
