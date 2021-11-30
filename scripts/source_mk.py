@@ -60,9 +60,6 @@ def main():
             "FIND_SRC  := {}".format(' '.join([str(i) for i in all_sources])),
             "FIND_INCLUDES := {}".format(includes),
             '',
-            '${MOCK_OUTPUT}/$(MOCK_NAME): $(FIND_OBJS)',
-            '\t$(CC) $(FIND_OBJS) -o $(MOCK_OUTPUT)/$(MOCK_NAME) $(FIND_INCLUDES)',
-            '',
             ]))
 
         for src, obj in zip(all_sources, all_objs):
