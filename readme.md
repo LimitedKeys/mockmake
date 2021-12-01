@@ -162,15 +162,17 @@ Project Makefile:
 ``` make
 MOCK_SOURCE := ./src ../libs/driver ../libs/test
 MOCK_INCLUDE := ./src ../libs/driver ../libs/test
+
 MOCK_OUTPUT := ./output/mock
 MOCK_EXE := project.mock.exe
 
 MOCK_PATCH := ./src/main.c
 MOCK_PSCRIPT := ./patch.py
 
-.PHONY: all
+.PHONY: all clean
 
 all: mock_run
+clean: mock_clean
 
 include ../libs/mockmake/mock.mk
 ```
