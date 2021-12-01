@@ -23,3 +23,12 @@ def test_find_source_src2(src2):
             files, 
             result):
         assert expected == actual
+
+def test_find_source_src3(src3):
+    root, files = src3
+    result = source_mk.find_source(root)
+
+    for expected, actual in zip_longest(
+            files, 
+            result):
+        assert expected == actual
