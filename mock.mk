@@ -1,12 +1,6 @@
 
-# Script is located near this makefile, need to
-# do fancy stuff to make that work.
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-HERE := $(notdir $(patsubst %/,%,$(dir $(MKFIKE_PATH))))
-
-ifeq "" "$(HERE)"
-HERE:=.
-endif
+MOCK_ROOT_DIR := $(dir $(MKFILE_PATH))
 
 ifndef MOCK_EXE
 MOCK_EXE := a.mock.out
@@ -26,7 +20,7 @@ endif
 
 OD := $(shell mkdir -p $(MOCK_OUTPUT))
 MOCK_OBJECTS := $(shell python \
-          $(HERE)/scripts/source_mk.py \
+          $(MOCK_ROOT_DIR)/scripts/source_mk.py \
           "$(MOCK_SOURCE)" \
           "$(MOCK_INCLUDE)" \
           $(MOCK_OUTPUT)/source.mk \
