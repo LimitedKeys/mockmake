@@ -1,41 +1,41 @@
 # Mock Make
 
-Quickly build a C application using make.
-Intended to be used to test an application with
-out all the source files.
+Quickly build a C application to test using make.
 
-## How do I do it
+## Isn't that just called make?
 
-1. Process main function to
-    - rename main
-    - remove infinite loops
-    - ...
-2. Compile source files
-3. Compile mock source files
-4. Compile test source
-5. Link
-6. Execute tests
-7. Lint
+Kinda. Let's say we're building firmware for a
+microcintroller, and we want to test it on our
+PC. Make is a great tool for this bit, and Mock
+Make can help:
 
-``` bash
-> make
-```
+- Find source files
+- Build object files
+- Link and stuff
 
-## Using Mock Make
+By listing the source directories in the
+`MOCK_SRC` variable, all the C files will be
+automatically found and staged for building.
 
-Creat a Makefile and define a few variables:
+Normally, the firmware being tested will have
+an involved 'main' function as well, with a
+`while(1)` loop at the end, which makes the
+firmware difficult to test. Mock Make offers
+the ability to 'patch' some source files using
+a patch script, so the blocking code can be
+altered.
 
-``` make
-MOCK_INCLUDE = ./src ../libs
-MOCK_SOURCE = ./src ../libs/driver ../libs/test
-MOCK_OUTPUT = ./output/mock
-MOCK_PATCH = main.c
-MOCK_EXE = test.mock.out
+Useful? Possibly. Limited? Definitely.
 
-.PHONY: all
+## Limitations
 
-all: mock_build mock_run
-```
+-  folders / files cannot contain white space
+   (bad things will happen)
+-  source files must have unique names.  All
+   objects are put into the same output
+   directory 
+
+## Details
 
 Variables to control Mock Make:
 
@@ -44,8 +44,9 @@ Variables to control Mock Make:
 | MOCK_INCLUDE | Dirs to include (-I)          |
 | MOCK_SOURCE  | Dirs to walk for souce files  |
 | MOCK_OUTPUT  | Output directory path         |
-| MOCK_PATCH   | TBD: Files to be patched      |
 | MOCK_EXE     | Output EXE name               |
+| MOCK_PATCH   | Files to be patched           |
+| MOCK_PSCRIPT | Path to the patch script      |
 
 Provided Recipes:
 
@@ -55,15 +56,61 @@ Provided Recipes:
 | mock_build   | Build the executable          |
 | mock_clean   | Remove the mock output dir    |
 
-## Limitations
+### Building
 
--  folders / files cannot contain white space (bad things will happen)
--  built source files must have unique names.
-   Two reasons:
-   1. All objects are put into the same output
-      directory. 
-   2. The patch file will find the source files
-      to patch based on the file name
+Directories provided to `MOCK_SOURCE` will be
+search recursively for C / S files. This
+process is done in Python by the
+`scripts/source_mk.py` script.
+
+One the source files are found, the script will
+write a `source.mk` make file to the
+`MOCK_OUTPUT` directory. This contains recipes
+to build each source file into an object file. 
+
+The `mock.mk` file imports (includes) the
+generated makefile and links the build objects
+together into `MOCK_EXE`.
+
+#### Why source.mk?
+
+I think that this will allow for:
+
+- Object files to be updated when the source
+  file is updated
+- New objects created when new source files are
+  added
+
+without doing anything too fancy. 
+
+### Patching?
+
+Source files provided to the `MOCK_PATCH`
+variable will be passed to the provided
+`MOCK_PSCRIPT` before compiling.
+
+Normally, a '.c' will be compiled into a '.o'
+file using some C compiler.
+
+    .c -> cc -> .o
+
+Patched files will run through a patch script
+first:
+
+    .c -> patch -> .patch.c -> cc -> .o
+
+By providing an extra recipe for these files in
+source.mk, the patch will only be regenerated
+when the source file changes. 
+
+The patch script should be in Python, and
+should accept two arguments:
+
+1.  Path to the source file to modify
+2.  Path to save the patched file to
+
+How the patch file operates on the source file
+is up to the calling project basically. 
 
 ## Example
 
@@ -86,6 +133,40 @@ MOCK_SOURCE := ./src ../libs/driver
 MOCK_INCLUDE := ./src ../libs/driver
 MOCK_OUTPUT := ./output/mock
 MOCK_EXE := project.mock.exe
+
+.PHONY: all
+
+all: mock_run
+
+include ../libs/mockmake/mock.mk
+```
+
+## Example: Patch Main Source
+
+Project Layout:
+
+```
++libs/
+|--mockmake/
+|--driver/
+|--test/
++project/
+|--src/main.c
+|--Makefile
+|--readme
+|--patch.py
+```
+
+Project Makefile:
+
+``` make
+MOCK_SOURCE := ./src ../libs/driver ../libs/test
+MOCK_INCLUDE := ./src ../libs/driver ../libs/test
+MOCK_OUTPUT := ./output/mock
+MOCK_EXE := project.mock.exe
+
+MOCK_PATCH := ./src/main.c
+MOCK_PSCRIPT := ./patch.py
 
 .PHONY: all
 
