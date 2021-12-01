@@ -84,7 +84,7 @@ def main():
             output.write("\n")
 
         for src, target in zip(patch_sources, patch_targets):
-            output.write(f'{target}: {src}\n')
+            output.write(f'{target}: {src} $(MOCK_PSCRIPT)\n')
             output.write(f'\tpython $(MOCK_PSCRIPT) {src} {target}')
             output.write("\n")
 
