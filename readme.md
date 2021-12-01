@@ -67,4 +67,29 @@ Provided Recipes:
 
 ## Example
 
+Project Layout:
 
+```
++libs/
+|--mockmake/
+|--driver/
++project/
+|--src/...
+|--Makefile
+|--readme
+```
+
+Project Makefile:
+
+``` make
+MOCK_SOURCE := ./src ../libs/driver
+MOCK_INCLUDE := ./src ../libs/driver
+MOCK_OUTPUT := ./output/mock
+MOCK_EXE := project.mock.exe
+
+.PHONY: all
+
+all: mock_run
+
+include ../libs/mockmake/mock.mk
+```
