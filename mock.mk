@@ -22,7 +22,8 @@ MOCK_OBJECTS := $(shell python \
           $(HERE)/scripts/source_mk.py \
           "$(MOCK_SOURCE)" \
           "$(MOCK_INCLUDE)" \
-          $(MOCK_OUTPUT)/source.mk)
+          $(MOCK_OUTPUT)/source.mk \
+          "$(MOCK_PATCH)")
 
 .PHONY: mock_run mock_build mock_clean test
 

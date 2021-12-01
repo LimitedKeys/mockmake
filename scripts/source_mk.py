@@ -29,26 +29,42 @@ def main():
     parser.add_argument("source_dirs")
     parser.add_argument("include_dirs")
     parser.add_argument("output_file")
+    parser.add_argument("patch_files")
 
     args = parser.parse_args()
 
     source_dirs = [i.strip() for i in args.source_dirs.split()]
-
-    include_dirs = ['-I{}'.format(i.strip()) for i in args.include_dirs.split()]
-    includes = ' '.join(include_dirs)
 
     all_sources = []
     for some_dir in source_dirs:
         if some_dir:
             all_sources.extend(find_source(some_dir))
 
+    patch_files = args.patch_files.split()
+
+    all_sources = [i for i in all_sources if i not in patch_files]
+
     all_objs = []
     for i in all_sources:
         name, _ = os.path.splitext(os.path.basename(i))
-        obj = name + '.o'
-        all_objs.append(os.path.join(
-            '$(MOCK_OUTPUT)',
-            obj))
+        obj = os.path.join('$(MOCK_OUTPUT)', name + '.o')
+        all_objs.append(obj)
+
+    patch_sources = []
+    patch_targets = []
+    for i in patch_files:
+        name, _ = os.path.splitext(os.path.basename(i))
+        src = os.path.join('$(MOCK_OUTPUT)', name + '.patch.c')
+        obj = os.path.join('$(MOCK_OUTPUT)', name + '.patch.o')
+
+        patch_sources.append(i)
+        patch_targets.append(src)
+
+        all_sources.append(src)
+        all_objs.append(obj)
+
+    include_dirs = ['-I{}'.format(i.strip()) for i in args.include_dirs.split()]
+    includes = ' '.join(include_dirs)
 
     output_path = os.path.join(args.output_file)
 
@@ -64,7 +80,12 @@ def main():
 
         for src, obj in zip(all_sources, all_objs):
             output.write(f'{obj}: {src}\n')
-            output.write(f"\t$(CC) -c {src} -o {obj} {includes}\n")
+            output.write(f"\t$(CC) -c $(CFLAGS) $(CPPFLAGS) {src} -o {obj} {includes}\n")
+            output.write("\n")
+
+        for src, target in zip(patch_sources, patch_targets):
+            output.write(f'{target}: {src}\n')
+            output.write(f'\tpython $(MOCK_PSCRIPT) {src} {target}')
             output.write("\n")
 
 if __name__== "__main__":
