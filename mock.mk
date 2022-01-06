@@ -7,15 +7,27 @@ MOCK_EXE := a.mock.out
 endif
 
 ifndef MOCK_SOURCE
-$(error MOCK_SOURCE Must be defined, and should include a list of directories to search for source files)
+$(error MOCK_SOURCE not defined. MOCK_SOURCE must be defined and contain a list of directories to search for C files)
 endif
 
 ifndef MOCK_INCLUDE
-$(error MOCK_INCLUDE Must be defined, and should include a list of directories to include for headers)
+$(error MOCK_INCLUDE not defined. MOCK_INCLUDE must be defined and contain a list of directories to include while building the C files and linking the executable)
 endif
 
 ifndef MOCK_OUTPUT
-$(error MOCK_OUTPUT Must be defined, which will hold the built objects, source.mk file, and final exe)
+$(error MOCK_OUTPUT not defined. MOCK_OUTPUT must be defined, and set to an outpt directory. This directory will hold the object files, source.mk file, and final exe)
+endif
+
+ifdef MOCK_PATCH
+ifndef MOCK_PSCRIPT
+$(error MOCK_PSCRIPT not defined. MOCK_PSCRIPT must be defined in order to patch files. Please set MOCK_PSCRIPT to the path of the python patch script)
+endif
+endif
+
+ifdef MOCK_PSCRIPT
+ifndef MOCK_PATCH
+$(error MOCK_PATCH not defined. MOCK_PATCH must be defined with a list of files to patch with MOCK_PSCRIPT)
+endif
 endif
 
 OD := $(shell mkdir -p $(MOCK_OUTPUT))

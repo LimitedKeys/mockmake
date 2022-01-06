@@ -1,11 +1,12 @@
 # Mock Make
 
-Quickly build a C application to test using make.
+Quickly build a C application to test using
+make.
 
 ## Isn't that just called make?
 
 Kinda. Let's say we're building firmware for a
-microcintroller, and we want to test it on our
+microcontroller, and we want to test it on our
 PC. Make is a great tool for this bit, and Mock
 Make can help:
 

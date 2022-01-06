@@ -61,8 +61,11 @@ def main():
         if some_dir:
             all_sources.extend(find_source(some_dir))
 
-    patch_files = args.patch_files.split()
-
+    patch_files = []
+    for patch_file in args.patch_files.split():
+        temp = os.path.abspath(patch_file)
+        patch_files.append(pathlib.Path(temp))
+    
     all_sources = [i for i in all_sources if i not in patch_files]
 
     all_objs = []
