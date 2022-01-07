@@ -13,7 +13,7 @@ clean:
 	rm -rf __pycache__
 	rm -rf output
 
-save: ${ARCHIVE}
+save: archive/${ARCHIVE}
 
-$(ARCHIVE):
+archive/$(ARCHIVE):
 	git archive -o ./archive/$(ARCHIVE) HEAD
