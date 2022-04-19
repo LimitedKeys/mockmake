@@ -2,6 +2,21 @@
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MOCK_ROOT_DIR := $(dir $(MKFILE_PATH))
 
+# Default Executables / Commands that can be over written
+ifndef PYTHON
+PYTHON := python
+endif
+
+ifdef RMDIR
+RMDIR := rm -rf
+endif
+
+ifndef MKDIR
+MKDIR := mkdir -p
+endif
+
+# Mock Make stuff
+
 ifndef MOCK_EXE
 MOCK_EXE := a.mock.out
 endif
@@ -30,15 +45,13 @@ $(error MOCK_PATCH not defined. MOCK_PATCH must be defined with a list of files 
 endif
 endif
 
-OD := $(shell mkdir -p $(MOCK_OUTPUT))
-MOCK_OBJECTS := $(shell python \
+MOCK_OBJECTS := $(shell $(PYTHON) \
           $(MOCK_ROOT_DIR)/scripts/source_mk.py \
+          "$(MOCK_OUTPUT)/source.mk" \
           "$(MOCK_SOURCE)" \
-          "$(MOCK_INCLUDE)" \
-          $(MOCK_OUTPUT)/source.mk \
           "$(MOCK_PATCH)")
 
-.PHONY: mock_run mock_build mock_clean test
+.PHONY: mock_run mock_build mock_clean
 
 mock_run: mock_build
 	$(info Running Mock '$(MOCK_EXE)')
@@ -47,10 +60,27 @@ mock_run: mock_build
 
 mock_build: $(MOCK_OUTPUT)/$(MOCK_EXE)
 
+# Define FIND_SRC and FIND_OBJS
 include $(MOCK_OUTPUT)/source.mk
 
-${MOCK_OUTPUT}/$(MOCK_EXE): $(FIND_OBJS)
-	$(CC) $(FIND_OBJS) -o $(MOCK_OUTPUT)/$(MOCK_EXE) $(FIND_INCLUDES)
+FIND_INCLUDE := $(addprefix -I,$(MOCK_INCLUDE))
+
+$(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_OBJS)
+	$(MKDIR) $(@D)
+	$(CC) $(FIND_OBJS) -o $(MOCK_OUTPUT)/$(MOCK_EXE) $(FIND_INCLUDE)
+
+%.patch.o: %.patch.c
+	$(MKDIR) $(@D)
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ $(FIND_INCLUDE)
+
+$(MOCK_OUTPUT)/%.patch.c: %.c $(MOCK_PSCRIPT)
+	$(MKDIR) $(@D)
+	$(PYTHON) $(MOCK_PSCRIPT) $< $@
+
+$(MOCK_OUTPUT)/%.o: %.c
+	$(MKDIR) $(@D)
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ $(FIND_INCLUDE)
 
 mock_clean:
-	rm -rf $(MOCK_OUTPUT)
+	$(RMDIR) $(MOCK_OUTPUT)
+
