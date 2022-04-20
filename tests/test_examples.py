@@ -22,6 +22,9 @@ EXAMPLES = [
 
 @pytest.mark.parametrize("path", EXAMPLES)
 def test_build_example(path):
+    subprocess.run([f"make -C {path} clean"],
+            shell=True,
+            check=True)
     subprocess.run([f"make -C {path}"],
             shell=True,
             check=True)
