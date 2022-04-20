@@ -7,4 +7,6 @@ int main(void) {
     print_a();
     print_b();
     print_c();
+
+    return -1;
 }

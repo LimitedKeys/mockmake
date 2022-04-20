@@ -6,9 +6,15 @@ def main(path, out):
         lines = in_file.readlines()
 
     # Parse lines here
+    fixed = []
+    for line in lines:
+        if "return -1;" in line:
+            fixed.append("return 0;\n")
+        else:
+            fixed.append(line);
 
     with open(out, 'w') as out_file:
-        out_file.writelines(lines)
+        out_file.writelines(fixed)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Patch")
