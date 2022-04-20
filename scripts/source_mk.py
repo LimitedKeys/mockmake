@@ -5,6 +5,11 @@ import argparse
 
 C_EXTENSIONS = ['.c', '.s', '.cpp']
 
+def _fix(path):
+    if path[:2] == './':
+        path = path[2:]
+    return path
+
 def find_source(root, folder="TEST"):
     ''' Find all C source files from the provided root directory.
 
@@ -19,7 +24,8 @@ def find_source(root, folder="TEST"):
     for path in pathlib.Path(root).glob('**/*'):
         extension = path.suffix
         if extension in C_EXTENSIONS:
-            found.append(str(path))
+            path = _fix(str(path))
+            found.append(path)
 
     return found
 
@@ -50,21 +56,35 @@ def main():
             all_sources.extend(find_source(some_dir))
 
     patch_files = []
+    patch_source_files = []
+    patch_object_files = []
     for patch_file in args.patch_files.split():
+        patch_file = _fix(patch_file)
         patch_files.append(patch_file)
+
+        name, _ = os.path.splitext(patch_file)
+
+        source_name = name + '.patch.c'
+        patch_source_files.append(os.path.join('$(MOCK_OUTPUT)', source_name))
+
+        object_name = name + '.patch.o'
+        patch_object_files.append(os.path.join('$(MOCK_OUTPUT)', object_name))
 
     all_sources = [i for i in all_sources if i not in patch_files]
 
-    all_objs = []
+    all_objects = []
     for i in all_sources:
         name, _ = os.path.splitext(i)
         name += '.o'
         obj = os.path.join('$(MOCK_OUTPUT)', name)
 
-        all_objs.append(obj)
+        all_objects.append(obj)
 
-    output_path = os.path.join(args.output_file)
-    write_mk(output_path, all_sources, all_objs)
+    all_sources.extend(patch_source_files)
+    all_objects.extend(patch_object_files)
+
+    # output_path = os.path.join(args.output_file)
+    write_mk(args.output_file, all_sources, all_objects)
 
 if __name__== "__main__":
     main()
