@@ -7,7 +7,7 @@ ifndef PYTHON
 PYTHON := python
 endif
 
-ifdef RMDIR
+ifndef RMDIR
 RMDIR := rm -rf
 endif
 
@@ -45,6 +45,8 @@ $(error MOCK_PATCH not defined. MOCK_PATCH must be defined with a list of files 
 endif
 endif
 
+# output dir needs made before python script runs
+OD := $(shell $(MKDIR) $(MOCK_OUTPUT))
 MOCK_OBJECTS := $(shell $(PYTHON) \
           $(MOCK_ROOT_DIR)/scripts/source_mk.py \
           "$(MOCK_OUTPUT)/source.mk" \
@@ -71,7 +73,7 @@ $(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_OBJS)
 
 %.patch.o: %.patch.c
 	$(MKDIR) $(@D)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ $(FIND_INCLUDE)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ $(FIND_INCLUDE)
 
 $(MOCK_OUTPUT)/%.patch.c: %.c $(MOCK_PSCRIPT)
 	$(MKDIR) $(@D)
@@ -79,7 +81,7 @@ $(MOCK_OUTPUT)/%.patch.c: %.c $(MOCK_PSCRIPT)
 
 $(MOCK_OUTPUT)/%.o: %.c
 	$(MKDIR) $(@D)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ $(FIND_INCLUDE)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ $(FIND_INCLUDE)
 
 mock_clean:
 	$(RMDIR) $(MOCK_OUTPUT)

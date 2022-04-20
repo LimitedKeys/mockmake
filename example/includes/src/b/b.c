@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-#include "b/b.h"
+#include "b.h"
 
 void print_b() {
     printf("b");
