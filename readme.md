@@ -31,10 +31,7 @@ Useful? Possibly. Limited? Definitely.
 ## Limitations
 
 -  folders / files cannot contain white space
-   (bad things will happen)
--  source files must have unique names.  All
-   objects are put into the same output
-   directory 
+   (bad things will happen, make limitation)
 
 ## Details
 
@@ -52,7 +49,8 @@ Variables to control Mock Make:
 Provided Recipes:
 
 | Recipe       | Description                   |
-| ------       | ----------		       |
+| ------       | ----------		               |
+| mock_all     | Build and Run                 |
 | mock_run     | Run the built executable      |
 | mock_build   | Build the executable          |
 | mock_clean   | Remove the mock output dir    |
@@ -75,14 +73,9 @@ together into `MOCK_EXE`.
 
 #### Why source.mk?
 
-I think that this will allow for:
-
-- Object files to be updated when the source
-  file is updated
-- New objects created when new source files are
-  added
-
-without doing anything too fancy. 
+Finding source files automatically in make is
+annoying. Python gives a little more control
+over this.
 
 ### Patching?
 
@@ -137,7 +130,7 @@ MOCK_EXE := project.mock.exe
 
 .PHONY: all
 
-all: mock_run
+all: mock_all
 
 include ../libs/mockmake/mock.mk
 ```
@@ -172,7 +165,7 @@ MOCK_PSCRIPT := ./patch.py
 
 .PHONY: all clean
 
-all: mock_run
+all: mock_all
 clean: mock_clean
 
 include ../libs/mockmake/mock.mk
