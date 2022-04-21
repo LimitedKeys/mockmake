@@ -14,11 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       
-    - name: Setup Python
+    - name: Setup Python and Test
       run: |
         python -m venv python-env
         source python-env/bin/activate
         python -m pip install pytest
-
-    - name: Run tests
-      run: make test
+        make test
