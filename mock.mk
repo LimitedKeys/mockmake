@@ -47,35 +47,29 @@ $(error MOCK_PATCH not defined. MOCK_PATCH must be defined with a list of files 
 endif
 endif
 
-# output dir needs made before python script runs
-OD := $(shell $(MKDIR) $(MOCK_OUTPUT))
+# Recursively find files from a list of dirs
+#
+# See:
+#     https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-# Define FIND_SRC
-MOCK_OBJECTS := $(shell $(PYTHON) \
-          $(MOCK_ROOT_DIR)/scripts/source_mk.py \
-          "$(MOCK_OUTPUT)/source.mk" \
-          "$(MOCK_SOURCE)")
-include $(MOCK_OUTPUT)/source.mk
+FIND_SRC:=$(call rwildcard,$(MOCK_SOURCE),*.c)
 
 # Add source files to the search path
 FIND_SRC_DIRS:=$(dir $(FIND_SRC))
 vpath %.c $(FIND_SRC_DIRS)
 
-# Strip the ./ from patch files
-#
-# the found source files will not have the ./
-MOCK_PATCH_FIXED:=$(subst ./,,$(MOCK_PATCH))
 MOCK_PATCH_SRC:=$(addprefix $(MOCK_OUTPUT)/, \
-    $(notdir $(MOCK_PATCH_FIXED:.c=.patch.c)))
+    $(notdir $(MOCK_PATCH:.c=.patch.c)))
 MOCK_PATCH_OBJ:=$(MOCK_PATCH_SRC:.c=.o)
 
 # filter out patch files - patch files will have
 # different build procedures
-FIND_SRC_NO_PATCH=$(filter-out $(MOCK_PATCH_FIXED),$(FIND_SRC))
+FIND_SRC_NO_PATCH=$(filter-out $(MOCK_PATCH),$(FIND_SRC))
 
-# Get a list of .o files
+# Make a list of .o files at output/%.o
 FIND_SRC_FILES:=$(notdir $(FIND_SRC_NO_PATCH))
-FIND_SRC_OBJS:=$(addprefix $(MOCK_OUTPUT)/,$(FIND_SRC_FILES:.c=.o))
+FIND_SRC_OBJ:=$(addprefix $(MOCK_OUTPUT)/,$(FIND_SRC_FILES:.c=.o))
 
 .PHONY: mock_all mock_run mock_build mock_clean mock_generate
 
@@ -94,7 +88,7 @@ mock_run: mock_build
 # unless you make the recipe depend on them
 mock_generate: $(MOCK_PATCH_SRC)
 
-$(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_SRC_OBJS) $(MOCK_PATCH_OBJ)
+$(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_SRC_OBJ) $(MOCK_PATCH_OBJ)
 	$(MKDIR) $(@D)
 	$(CC) $^ -o $@ $(FIND_INCLUDE)
 
@@ -102,7 +96,6 @@ $(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_SRC_OBJS) $(MOCK_PATCH_OBJ)
 	$(MKDIR) $(@D)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ $(FIND_INCLUDE)
 
-# main.patch.c: src/main.c $(MOCK_PSCRIPT)
 $(MOCK_OUTPUT)/%.patch.c: %.c $(MOCK_PSCRIPT)
 	$(MKDIR) $(@D)
 	$(PYTHON) $(MOCK_PSCRIPT) $< $@
