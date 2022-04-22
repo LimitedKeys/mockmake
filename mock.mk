@@ -49,14 +49,33 @@ endif
 
 # output dir needs made before python script runs
 OD := $(shell $(MKDIR) $(MOCK_OUTPUT))
+
+# Define FIND_SRC
 MOCK_OBJECTS := $(shell $(PYTHON) \
           $(MOCK_ROOT_DIR)/scripts/source_mk.py \
           "$(MOCK_OUTPUT)/source.mk" \
-          "$(MOCK_SOURCE)" \
-          "$(MOCK_PATCH)")
-
-# Define FIND_SRC and FIND_OBJS
+          "$(MOCK_SOURCE)")
 include $(MOCK_OUTPUT)/source.mk
+
+# Add source files to the search path
+FIND_SRC_DIRS:=$(dir $(FIND_SRC))
+vpath %.c $(FIND_SRC_DIRS)
+
+# Strip the ./ from patch files
+#
+# the found source files will not have the ./
+MOCK_PATCH_FIXED:=$(subst ./,,$(MOCK_PATCH))
+MOCK_PATCH_SRC:=$(addprefix $(MOCK_OUTPUT)/, \
+    $(notdir $(MOCK_PATCH_FIXED:.c=.patch.c)))
+MOCK_PATCH_OBJ:=$(MOCK_PATCH_SRC:.c=.o)
+
+# filter out patch files - patch files will have
+# different build procedures
+FIND_SRC_NO_PATCH=$(filter-out $(MOCK_PATCH_FIXED),$(FIND_SRC))
+
+# Get a list of .o files
+FIND_SRC_FILES:=$(notdir $(FIND_SRC_NO_PATCH))
+FIND_SRC_OBJS:=$(addprefix $(MOCK_OUTPUT)/,$(FIND_SRC_FILES:.c=.o))
 
 .PHONY: mock_all mock_run mock_build mock_clean mock_generate
 
@@ -68,18 +87,22 @@ mock_run: mock_build
 	$(info ------------)
 	@$(MOCK_OUTPUT)/$(MOCK_EXE)
 
-# when chaining pattern rules, intermediate files are deleted by defaul. patch.c files are deleted by defaul normally, unless you make the recipe depend on them
-mock_generate: $(filter %.patch.c,$(FIND_SRC))
+# when chaining pattern rules, intermediate 
+# files are deleted by defaulit.
+#
+# patch.c files are deleted by default normally,
+# unless you make the recipe depend on them
+mock_generate: $(MOCK_PATCH_SRC)
 
-
-$(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_OBJS)
+$(MOCK_OUTPUT)/$(MOCK_EXE): $(FIND_SRC_OBJS) $(MOCK_PATCH_OBJ)
 	$(MKDIR) $(@D)
-	$(CC) $(FIND_OBJS) -o $(MOCK_OUTPUT)/$(MOCK_EXE) $(FIND_INCLUDE)
+	$(CC) $^ -o $@ $(FIND_INCLUDE)
 
 %.patch.o: %.patch.c
 	$(MKDIR) $(@D)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ $(FIND_INCLUDE)
 
+# main.patch.c: src/main.c $(MOCK_PSCRIPT)
 $(MOCK_OUTPUT)/%.patch.c: %.c $(MOCK_PSCRIPT)
 	$(MKDIR) $(@D)
 	$(PYTHON) $(MOCK_PSCRIPT) $< $@
