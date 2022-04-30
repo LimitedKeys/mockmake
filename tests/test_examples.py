@@ -14,6 +14,7 @@ EXAMPLE_PATH = os.path.join(
         "example")
 
 EXAMPLES = [
+    os.path.join(EXAMPLE_PATH, "firmware"),
     os.path.join(EXAMPLE_PATH, "hello_world"),
     os.path.join(EXAMPLE_PATH, "source_tree"),
     os.path.join(EXAMPLE_PATH, "includes"),

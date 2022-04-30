@@ -7,3 +7,7 @@ MOCK_PATCH = ./main.c
 MOCK_PSCRIPT = ./scripts/patch.py
 
 include ../../mock.mk
+
+.PHONY: clean
+
+clean: mock_clean
