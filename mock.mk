@@ -47,6 +47,10 @@ $(error MOCK_PATCH not defined. MOCK_PATCH must be defined with a list of files 
 endif
 endif
 
+# Generate the .d files, which help Make resolve
+# dependencies with source and header files
+override CFLAGS+=-MMD
+
 # Recursively find files from a list of dirs
 #
 # See:
@@ -57,7 +61,8 @@ FIND_SRC:=$(call rwildcard,$(MOCK_SOURCE),*.c)
 
 # Add source files to the search path
 FIND_SRC_DIRS:=$(dir $(FIND_SRC))
-vpath %.c $(FIND_SRC_DIRS)
+PATCH_DIRS:=$(dir $(MOCK_PATCH))
+vpath %.c $(FIND_SRC_DIRS) $(PATCH_DIRS)
 
 MOCK_PATCH_SRC:=$(addprefix $(MOCK_OUTPUT)/, \
     $(notdir $(MOCK_PATCH:.c=.patch.c)))
@@ -70,6 +75,10 @@ FIND_SRC_NO_PATCH=$(filter-out $(MOCK_PATCH),$(FIND_SRC))
 # Make a list of .o files at output/%.o
 FIND_SRC_FILES:=$(notdir $(FIND_SRC_NO_PATCH))
 FIND_SRC_OBJ:=$(addprefix $(MOCK_OUTPUT)/,$(FIND_SRC_FILES:.c=.o))
+
+# Get the list of dependency files to include
+FIND_SRC_DEP:=$(FIND_SRC_OBJ:.o=.d) \
+			  $(MOCK_PATCH_OBJ:.o=.d)
 
 .PHONY: mock_all mock_run mock_build mock_clean mock_generate
 
@@ -106,4 +115,6 @@ $(MOCK_OUTPUT)/%.o: %.c
 
 mock_clean:
 	$(RMDIR) $(MOCK_OUTPUT)
+
+-include $(FIND_SRC_DEP)
 
